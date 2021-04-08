@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Preferred devices</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://sdk.virtualcareservices.net/dist/umd/vcs-realtime-sdk.min.js"></script>
+  <script src="../config.js"></script>
+</head>
+
+<body>
+  <h2>Preferred devices</h2>
+  <h3>Description</h3>
+  <p>This sample app shows how to <a href="https://sdk.virtualcareservices.net/reference/#device-getdevices-%E2%87%92-promise-object">get the available devices</a> (camera, mic, speakers) and <a href="https://sdk.virtualcareservices.net/reference/#device-setpreferreddevice-deviceid-kind">set the preferred device</a>. The
+    selected devices is saved in local storage.</p>
+  <h3>Usage</h3>
+  <p>Select the preferred devices and join the room. Then open the <a href="./preferred-devices.html"
+      target="_blank">same
+      url</a> on another tab and do the same.</p>
+
+  <div>
+    <span>Microphone:</span>
+    <select name="audioInput" id="audioInput">
+      <option value="none">Use default</option>
+    </select>
+  </div>
+  <div>
+    <span>Camera:</span>
+    <select name="videoInput" id="videoInput">
+      <option value="none">Use default</option>
+    </select>
+  </div>
+  <div>
+    <span>Speaker:</span>
+    <select name="audioOutput" id="audioOutput">
+      <option value="none">Use default</option>
+    </select>
+  </div>
+
+  <button id="joinLeaveBtn">Join</button>
+  <div id="videos"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      let room;
+
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const nameEl = document.getElementById('name');
+      const locationEl = document.getElementById('location');
+      const videos = document.getElementById('videos');
+
+      // Populate the device list and select the preferred device
+      const devices = await RealtimeSdk.Device.getDevices();
+      ['audioInput', 'videoInput', 'audioOutput'].forEach(type => {
+        const list = document.getElementById(type);
+        list.addEventListener('change', () => {
+          RealtimeSdk.Device.setPreferredDevice(list.value, type.toLowerCase());
+        });
+        devices[`${type}List`].forEach(d => {
+          const option = document.createElement('option');
+          option.value = d.deviceId;
+          option.text = d.label;
+          option.selected = devices[type]?.deviceId === d.deviceId;
+          list.appendChild(option);
+        });
+      });
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        if (!room) {
+          joinLeaveBtn.disabled = true;
+          room = await RealtimeSdk.joinRoom(ROOM_TOKEN, {
+            host: VCS_DOMAIN,
+            audio: false
+          });
+          joinLeaveBtn.disabled = false;
+          joinLeaveBtn.innerText = 'Leave';
+          render(room.localParticipant);
+          room.remoteParticipants.forEach(render);
+          room.on('participantJoined', render);
+          room.on('participantLeft', remove);
+          room.on('roomLeft', cleanup);
+        } else {
+          room.leave();
+          room = null;
+          joinLeaveBtn.innerText = 'Join';
+        }
+      });
+
+      function render(participant) {
+        const div = document.createElement('div');
+        div.id = participant.address;
+        participant.attach(div);
+        videos.appendChild(div);
+      }
+
+      function remove(participant) {
+        // Remove the video wrapper div
+        document.getElementById(participant.address)?.remove();
+      }
+
+      function cleanup() {
+        videos.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

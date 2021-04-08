@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>ES module</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="../config.js"></script>
+</head>
+
+<body>
+  <h2>Use SDK as ES module</h2>
+  <h3>Description</h3>
+  <p>This sample shows how to use the SDK as an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules">ES5 module</a>. This can be via <a href="https://jakearchibald.com/2017/es-modules-in-browsers/">script include of type=module</a> or a <code>npm install</code> and
+    a build tool like <a href="https://rollupjs.org/">rollup</a> or <a href="https://webpack.js.org/">webpack</a>.</p>
+  <h3>Usage</h3>
+  <p>Open the <a href="./es-module.html" target="_blank">same url</a> on another tab (or even another device/browser)
+    and then join on both tabs.</p>
+  <button id="joinLeaveBtn">Join</button>
+  <div id="videos"></div>
+
+  <script type="module">
+    // Import SDK's joinRoom as ES module
+    import { joinRoom } from 'https://sdk.virtualcareservices.net/dist/mjs/vcs-realtime-sdk.min.mjs';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      let room;
+
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const videos = document.getElementById('videos');
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        if (!room) {
+          joinLeaveBtn.disabled = true;
+          room = await joinRoom(ROOM_TOKEN, {
+            host: VCS_DOMAIN,
+            audio: false,
+            hdVideo: true
+          });
+          joinLeaveBtn.disabled = false;
+          joinLeaveBtn.innerText = 'Leave';
+          render(room.localParticipant);
+          room.remoteParticipants.forEach(render);
+          room.on('participantJoined', render);
+          room.on('participantLeft', remove);
+          room.on('roomLeft', cleanup);
+        } else {
+          room.leave();
+          room = null;
+          joinLeaveBtn.innerText = 'Join';
+        }
+      });
+
+      function render(participant) {
+        const div = document.createElement('div');
+        div.id = participant.address;
+        // Let SDK create the video element, and update changes to the media stream
+        participant.attach(div);
+        videos.appendChild(div);
+      }
+
+      function remove(participant) {
+        // Remove the video wrapper div
+        document.getElementById(participant.address)?.remove();
+      }
+
+      function cleanup() {
+        videos.innerHTML = '';
+      }
+    });
+  </script>
+
+</body>
+
+</html>

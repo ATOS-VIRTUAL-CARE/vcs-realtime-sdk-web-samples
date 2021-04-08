@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Logging</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  <script src="//unpkg.com/loglevel"></script>
+  <script src="https://sdk.virtualcareservices.net/dist/umd/vcs-realtime-sdk.min.js"></script>
+  <script src="../config.js"></script>
+</head>
+
+<body>
+  <h2>Logging</h2>
+  <h3>Description</h3>
+  <p>This sample app shows how to <a href="https://sdk.virtualcareservices.net/reference/#setlogger-baselogger">set a custom logger</a>. Changing log levels is the resposibility of the app, but can be done via 3rd party libraries such as <a
+      href="https://www.npmjs.com/package/loglevel">loglevel</a>.</p>
+  <h3>Usage</h3>
+  <p>Open the <a href="./join-room.html" target="_blank">same url</a> on another tab (or even another device/browser)
+    and then join on both tabs.</p>
+  <button id="joinLeaveBtn">Join</button>
+  <button id="muteUnmuteBtn" class="hidden">Mute</button>
+
+  <p>Log to:</p>
+  <input type="radio" id="inline" name="output" value="inline" onchange="changeOutput(this)" checked>
+  <label for="output">Inline</label><br>
+  <input type="radio" id="console" name="output" value="console" onchange="changeOutput(this)">
+  <label for="console">Console</label><br>
+
+  <p>Log level:</p>
+  <input type="radio" id="debug" name="level" value="debug" onchange="changeLevel(this)" checked>
+  <label for="debug">Debug</label><br>
+  <input type="radio" id="info" name="level" value="info" onchange="changeLevel(this)">
+  <label for="info">Info</label><br>
+  <input type="radio" id="warn" name="level" value="warn" onchange="changeLevel(this)">
+  <label for="warn">Warning</label><br>
+  <input type="radio" id="error" name="level" value="error" onchange="changeLevel(this)">
+  <label for="error">Error</label><br>
+
+  <div id="videos"></div>
+  <div id="logs"></div>
+
+  <script>
+    // Define custom logger for inline logging
+    const inlineLogger = {
+      debug(...args) { printLog('DEBUG', ...args) },
+      info(...args) { printLog('INFO', ...args) },
+      warn(...args) { printLog('WARN', ...args) },
+      error(...args) { printLog('ERROR', ...args) }
+    }
+
+    let room = null;
+    let logger = inlineLogger;
+
+    // Custom log function for inline logging
+    function printLog(type, ...args) {
+      if (log.getLevel() <= log.levels[type]) {
+        args.unshift(moment().format('HH:mm:ss.SSS'));
+        const pre = document.createElement('pre');
+        pre.classList.add(type);
+        pre.innerText = args.reduce((prevVal, currVal, idx) => {
+          const s = typeof currVal === 'string' ? currVal : JSON.stringify(currVal, null, 2);
+          return idx === 0 ? s : prevVal + ' ' + s;
+        }, '');
+        document.getElementById('logs').appendChild(pre);
+      }
+    }
+
+    function render(participant) {
+      const div = document.createElement('div');
+      div.id = participant.address;
+      // Let SDK create the video element, and update changes to the media stream
+      participant.attach(div);
+      videos.appendChild(div);
+    }
+
+    function remove(participant) {
+      // Remove the video wrapper div
+      document.getElementById(participant.address)?.remove();
+    }
+
+    function cleanup() {
+      videos.innerHTML = '';
+    }
+
+    function changeOutput(target) {
+      const output = target.value;
+      switch (output) {
+        case 'inline':
+          logger = inlineLogger;
+          break;
+        case 'console':
+          logger = log;
+          break;
+      }
+      RealtimeSdk.setLogger(logger);
+    }
+
+    function changeLevel(target) {
+      log.setLevel(target.value);
+      // Reset the SDK logger
+      RealtimeSdk.setLogger(logger);
+    }
+
+    function leaveRoom() {
+      room?.leave();
+      room = null;
+      joinLeaveBtn.innerText = 'Join';
+      muteUnmuteBtn.classList.add('hidden');
+      joinLeaveBtn.disabled = false;
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      // Set default log level to debug. `log` is the 3rd party library `loglevel`.
+      log.setLevel('debug');
+
+      // Set default logger to print logs on page
+      RealtimeSdk.setLogger(inlineLogger);
+
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const muteUnmuteBtn = document.getElementById('muteUnmuteBtn');
+      const videos = document.getElementById('videos');
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        if (room) {
+          leaveRoom();
+        } else {
+          try {
+            logger.info('[myapp]: Joining room...');
+            joinLeaveBtn.disabled = true;
+            room = await RealtimeSdk.joinRoom(ROOM_TOKEN, {
+              host: VCS_DOMAIN
+            });
+            logger.info(`[myapp]: Joined room: ${room.name}`);
+
+            joinLeaveBtn.disabled = false;
+            joinLeaveBtn.innerText = 'Leave';
+            muteUnmuteBtn.classList.remove('hidden');
+            render(room.localParticipant);
+            room.remoteParticipants.forEach(render);
+            room.on('participantJoined', render);
+            room.on('participantLeft', remove);
+            room.on('roomLeft', cleanup);
+          } catch (err) {
+            logger.error('[myapp]: Error joining room.', err);
+            leaveRoom();
+          }
+        }
+      });
+
+      muteUnmuteBtn.addEventListener('click', () => {
+        room.toggleMute();
+        muteUnmuteBtn.innerText = room.isMuted() ? 'Unmute' : 'Mute';
+      });
+    });
+  </script>
+</body>
+
+</html>

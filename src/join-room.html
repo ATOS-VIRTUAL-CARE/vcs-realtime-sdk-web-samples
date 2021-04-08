@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Audio/video session</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="http://localhost:3030/dist/umd/vcs-realtime-sdk.js"></script>
+  <script src="../config.js"></script>
+</head>
+
+<body>
+  <h2>Join room with audio and video</h2>
+  <h3>Description</h3>
+  <p>This sample app <a
+      href="https://sdk.virtualcareservices.net/reference/#joinroom-token-options-%E2%87%92-promise-room">joins a
+      room</a> with audio and video, then allows <a
+      href="https://sdk.virtualcareservices.net/reference/#room-togglevideo-%E2%87%92-promise-boolean">toggle video</a>
+    and <a href="https://sdk.virtualcareservices.net/reference/#room-togglemute-%E2%87%92-boolean">mute/unmute</a>.</p>
+  <h3>Usage</h3>
+  <p>Open the <a href="./join-room.html" target="_blank">same url</a> on another tab (or even another device/browser)
+    and then join on both tabs.</p>
+  <button id="joinLeaveBtn">Join</button>
+  <button id="toggleVideoBtn" class="hidden">Toggle Video</button>
+  <button id="muteUnmuteBtn" class="hidden">Mute</button>
+  <div id="videos"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      let room;
+
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+      const muteUnmuteBtn = document.getElementById('muteUnmuteBtn');
+      const videos = document.getElementById('videos');
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        try {
+          if (!room) {
+            joinLeaveBtn.disabled = true;
+            room = await RealtimeSdk.joinRoom(ROOM_TOKEN, {
+              host: VCS_DOMAIN,
+              audio: true, // Default is true.
+              video: true, // Default is true.
+              hdVideo: true // Default is true. Enables HD video (uses more bandwidth).
+            });
+            joinLeaveBtn.disabled = false;
+            joinLeaveBtn.innerText = 'Leave';
+            toggleVideoBtn.classList.toggle('hidden');
+            muteUnmuteBtn.classList.toggle('hidden');
+            render(room.localParticipant);
+            room.remoteParticipants.forEach(render);
+            room.on('participantJoined', render);
+            room.on('participantLeft', remove);
+            room.on('roomLeft', cleanup);
+            room.on('participantJoinFailed', (p, reason) => {
+              console.log(`Participant ${p.name} failed to join. Reason: ${reason}`);
+            });
+          } else {
+            room.leave();
+            room = null;
+            joinLeaveBtn.innerText = 'Join';
+            toggleVideoBtn.classList.toggle('hidden');
+            muteUnmuteBtn.classList.toggle('hidden');
+          }
+        } catch (err) {
+          alert(err);
+        }
+      });
+
+      toggleVideoBtn.addEventListener('click', async () => {
+        await room?.toggleVideo();
+      });
+
+      muteUnmuteBtn.addEventListener('click', () => {
+        room.toggleMute();
+        muteUnmuteBtn.innerText = room.isMuted() ? 'Unmute' : 'Mute';
+      });
+
+      function render(participant) {
+        const div = document.createElement('div');
+        div.id = participant.address;
+        // Let SDK create the video element, and update changes to the media stream
+        participant.attach(div);
+        videos.appendChild(div);
+      }
+
+      function remove(participant) {
+        // Remove the video wrapper div
+        document.getElementById(participant.address)?.remove();
+      }
+
+      function cleanup() {
+        videos.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

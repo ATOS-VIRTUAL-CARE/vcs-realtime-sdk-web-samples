@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Custom media stream</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://sdk.virtualcareservices.net/dist/umd/vcs-realtime-sdk.min.js"></script>
+  <script src="../config.js"></script>
+</head>
+
+<body>
+  <h2>Custom media stream</h2>
+  <h3>Description</h3>
+  <p>This sample app uses <code><a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia">getUserMedia</a></code> to manually get the audio from the microphone and video from the camera, rather then via the SDK. The returned stream is then passed to the SDK's <code><a target="_blank" href="https://sdk.virtualcareservices.net/reference/#joinroom-token-options-%E2%87%92-promise-room">joinRoom</a></code> API.</p>
+  <p>Independent from the above, this example also shows how to temporarily replace the local video stream. Here the video stream is replace by a screenshare, but the mediaStream could also be created via <code><a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/captureStream">captureStream</a></code> or <code><a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder">MediaRecorder</a></code>.</p>
+  <h3>Usage</h3>
+  <p>Click 'Join', then open the <a href="./join-room.html" target="_blank">Join Room</a> sample in anther tab and join as well.</p>
+  <p>Use 'Toggle screenshare' to toggle between streaming screenshare and the camera.</p>
+
+  <button id="joinLeaveBtn">Join</button>
+  <button id="screenshareBtn" class="hidden">Toggle screenshare</button>
+  <div id="videos"></div>
+  <video id="screenshareVideo" width="50%" autoplay muted class="hidden"></video>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      let room;
+
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const toggleScreenshareBtn = document.getElementById('screenshareBtn');
+      const videos = document.getElementById('videos');
+      const screenshareVideo = document.getElementById('screenshareVideo');
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        if (!room) {
+          const mediaStream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: { aspectRatio: 1.77 }
+          });
+          joinLeaveBtn.disabled = true;
+          room = await RealtimeSdk.joinRoom(ROOM_TOKEN, {
+            host: VCS_DOMAIN,
+            mediaStream
+          });
+          joinLeaveBtn.disabled = false;
+          joinLeaveBtn.innerText = 'Leave';
+          screenshareBtn.classList.toggle('hidden');
+          render(room.localParticipant);
+          room.remoteParticipants.forEach(render);
+          room.on('participantJoined', render);
+          room.on('participantLeft', remove);
+          room.on('roomLeft', cleanup);
+        } else {
+          room.leave();
+          room = null;
+          joinLeaveBtn.innerText = 'Join';
+        }
+      });
+
+      screenshareBtn.addEventListener('click', async () => {
+        screenshareVideo.classList.toggle('hidden');
+        if (screenshareVideo.srcObject) {
+          // Go back to localVideoStream
+          await room?.replaceVideoStream(room.localParticipant.mediaStream);
+
+          // Stop screenshare
+          screenshareVideo.srcObject.getTracks().forEach(track => track.stop());
+          screenshareVideo.srcObject = null;
+        } else {
+          // Replace video sent with screenshare. Audio is unchanged. 
+          const stream = await navigator.mediaDevices.getDisplayMedia();
+          screenshareVideo.srcObject = stream;
+          await room?.replaceVideoStream(stream);
+        }
+      });
+
+      function render(participant) {
+        const div = document.createElement('div');
+        div.id = participant.address;
+        // Let SDK create the video element, and update changes to the media stream
+        participant.attach(div);
+        videos.appendChild(div);
+      }
+
+      function remove(participant) {
+        // Remove the video wrapper div
+        document.getElementById(participant.address)?.remove();
+      }
+
+      function cleanup() {
+        videos.innerHTML = '';
+        screenshareVideo.classList.add('hidden');
+        toggleScreenshareBtn.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+
+</html>

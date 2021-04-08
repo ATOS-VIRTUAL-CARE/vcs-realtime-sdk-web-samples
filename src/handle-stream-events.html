@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Handle stream events</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://sdk.virtualcareservices.net/dist/umd/vcs-realtime-sdk.min.js"></script>
+  <script src="../config.js"></script>
+  <style>
+    video { width: 50% !important }
+  </style>
+</head>
+
+<body>
+  <h2>Handle stream events manually</h2>
+  <h3>Description</h3>
+  <p>This sample app listens for <code><a href="https://sdk.virtualcareservices.net/reference/#localstream">localStream</a></code> and <code><a href="https://sdk.virtualcareservices.net/reference/#remotestream">remoteStream</a></code> events to manually set the <code>srcObject</code> attribute on the video element, rather than letting the SDKs <code><a href="https://sdk.virtualcareservices.net/reference/#localparticipant-attach-el-style">participant.attach</a></code> API automatically update the video elements.</p>
+  <h3>Usage</h3>
+  <p>Open the <a href="./handle-stream-events.html" target="_blank">same url</a> on another tab (or even another device/browser) and then join on both tabs.</p>
+  <button id="joinLeaveBtn">Join</button>
+  <div id="videos"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      let room;
+
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const videos = document.getElementById('videos');
+      const localVideo = document.getElementById('localVideo');
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        if (!room) {
+          joinLeaveBtn.disabled = true;
+          room = await RealtimeSdk.joinRoom(ROOM_TOKEN, {
+            host: VCS_DOMAIN
+          });
+          joinLeaveBtn.disabled = false;
+          joinLeaveBtn.innerText = 'Leave';
+
+          // Add local video element
+          addVideoElement(room.localParticipant);
+
+          // Update local video element with updated local stream
+          room.on('localStream', updateLocalStream);
+
+          // Add remote video element for prior joined participants
+          room.remoteParticipants.forEach(addVideoElement);
+
+          // Add remote video element for newly joined participants
+          room.on('participantJoined', addVideoElement);
+
+          // Update remote video element with updated remote stream
+          room.on('remoteStream', updateRemoteStream);
+
+          // Remove remote video element of participant that left
+          room.on('participantLeft', removeVideoElement);
+
+          // Local participant left room
+          room.on('roomLeft', cleanup);
+        } else {
+          room.leave();
+          room = null;
+          joinLeaveBtn.innerText = 'Join';
+        }
+      });
+
+      function updateLocalStream() {
+        localVideo.srcObject = room.localParticipant.mediaStream;
+      }
+
+      function updateRemoteStream(participant) {
+        document.getElementById(participant.address).srcObject = participant.mediaStream;
+      }
+
+      function addVideoElement(participant) {
+        const el = document.createElement('video');
+        el.autoplay = true;
+        el.id = participant.address;
+        el.srcObject = participant.mediaStream;
+        videos.appendChild(el);
+      }
+
+      function removeVideoElement(participant) {
+        document.getElementById(participant.address)?.remove();
+      }
+
+      function cleanup() {
+        videos.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

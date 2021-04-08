@@ -1,0 +1,151 @@
+html {
+  /* avoid annoying page width change
+  when moving from the home page */
+  overflow-y: scroll;
+}
+
+div#container {
+  margin: 0 auto 0 auto;
+  max-width: 60em;
+  padding: 1em 1.5em 1.3em 1.5em;
+}
+
+body {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 300;
+  margin: 0;
+  padding: 1em;
+  word-break: break-word;
+}
+
+code {
+  font-size: 1.2em;
+}
+
+#logs {
+  margin-top: 20px;
+}
+#logs pre {
+  margin: 0px;
+}
+#logs .DEBUG {
+  color: blue;
+}
+#logs .INFO {
+  color: grey;
+}
+#logs .WARN {
+  color: yellow;
+}
+#logs .ERROR {
+  color: red;
+}
+
+.hidden {
+  display: none;
+}
+
+div > input, div > select {
+  width: 250px;
+  padding: 5px;
+  margin: 2px;
+}
+
+button {
+  background-color: royalblue;
+  border: none;
+  border-radius: 2px;
+  color: white;
+  font-family: 'Raleway', sans-serif;
+  font-size: 0.8em;
+  margin: 0 0 1em 0;
+  padding: 0.5em 0.7em 0.6em 0.7em;
+}
+
+button:hover {
+  filter: brightness(110%);
+  cursor: pointer;
+}
+
+button[disabled], button[disabled]:hover {
+  cursor: not-allowed;
+  background-color: grey;
+}
+
+canvas {
+  background-color: #ccc;
+  max-width: 100%;
+  width: 100%;
+}
+
+h1 {
+  border-bottom: 1px solid #ccc;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  margin: 0 0 0.8em 0;
+  padding: 0 0 0.2em 0;
+}
+
+h2 {
+  color: #444;
+  font-weight: 500;
+}
+
+h3 {
+  border-top: none;
+  color: #666;
+  font-weight: 500;
+  margin: 10px 0 10px 0;
+  white-space: nowrap;
+}
+
+li {
+  margin: 0 0 0.4em 0;
+}
+
+p {
+  color: #444;
+  font-weight: 300;
+  line-height: 1.3em;
+}
+
+section {
+  border-bottom: 1px solid #eee;
+  margin: 0 0 30px 0;
+  padding: 0 0 20px 0;
+}
+
+a {
+  color: #1d6eee;
+  font-weight: 300;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #3d85c6;
+  text-decoration: underline;
+}
+
+p.description {
+  margin: 0 0 0.5em 0;
+}
+
+#videos {
+  display: flex;
+}
+
+#videos>div {
+  width: 50%;
+}
+
+#videos video {
+  width: 100%;
+}
+
+ul {
+  margin: 0 0 0.5em 0;
+}
+
+.name {
+  position: absolute;
+}

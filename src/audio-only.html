@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Audio only room</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://sdk.virtualcareservices.net/dist/umd/vcs-realtime-sdk.min.js"></script>
+  <script src="../config.js"></script>
+</head>
+
+<body>
+  <h2>Audio only</h2>
+  <h3>Description</h3>
+  <p>This sample app shows <a href="https://sdk.virtualcareservices.net/reference/#joinroom-token-options-%E2%87%92-promise-room">joining a room</a> with audio only, and manually attach the stream to an audio tag by listening for <code><a href="https://sdk.virtualcareservices.net/reference/#remotestream">remoteStream</a></code> events.</p>
+  <h3>Usage</h3>
+  <p>Open the <a href="./audio-only.html" target="_blank">same url</a> on another tab (or even another device/browser)
+    and then join on both tabs.</p>
+  <button id="joinLeaveBtn">Join</button>
+  <button id="muteUnmuteBtn" class="hidden">Mute</button>
+  <audio id="audio" autoplay></audio>
+
+  <script>
+    // Show logs in console
+    RealtimeSdk.setLogger(console);
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      let room;
+
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const muteUnmuteBtn = document.getElementById('muteUnmuteBtn');
+      const audio = document.getElementById('audio');
+      let started = false;
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        if (!room) {
+          joinLeaveBtn.disabled = true;
+          room = await RealtimeSdk.joinRoom(ROOM_TOKEN, {
+            host: VCS_DOMAIN,
+            audio: true,
+            video: false // disable video
+          });
+          joinLeaveBtn.disabled = false;
+          joinLeaveBtn.innerText = 'Leave';
+          muteUnmuteBtn.classList.toggle('hidden');
+
+          // Attach remote stream to audio tag
+          room.on('remoteStream', p => audio.srcObject = p.mediaStream);
+        } else {
+          room.leave();
+          room = null;
+          joinLeaveBtn.innerText = 'Join';
+          muteUnmuteBtn.classList.toggle('hidden');
+        }
+      });
+
+      muteUnmuteBtn.addEventListener('click', () => {
+        room.toggleMute();
+        muteUnmuteBtn.innerText = room.isMuted() ? 'Unmute' : 'Mute';
+      });
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Delay local stream</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://sdk.virtualcareservices.net/dist/umd/vcs-realtime-sdk.min.js"></script>
+  <script src="../config.js"></script>
+</head>
+
+<body>
+  <h2>Delay local stream until second participant joins</h2>
+  <h3>Description</h3>
+  <p>In this example the local camera/mic is not requested until a second participant joins the room, at which time the room session is established. The joinRoom option <code><a href="https://sdk.virtualcareservices.net/reference/#joinroom-token-options-%E2%87%92-promise-room">delayLocalStream</a></code> is used for this.</p>
+  <h3>Usage</h3>
+  <p>Join the room, then open the <a href="./delay-localstream.html" target="_blank">same url</a> on another tab (or even another device/browser) and then join as well.</p>
+  <button id="joinLeaveBtn">Join</button>
+  <p id="msg"></p>
+  <div id="videos"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      let room;
+
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const msg = document.getElementById('msg');
+      const videos = document.getElementById('videos');
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        if (!room) {
+          joinLeaveBtn.disabled = true;
+          room = await RealtimeSdk.joinRoom(ROOM_TOKEN, {
+            host: VCS_DOMAIN,
+            delayLocalStream: true
+          });
+          joinLeaveBtn.disabled = false;
+          joinLeaveBtn.innerText = 'Leave';
+          if (!room.remoteParticipants.length) {
+            msg.innerText = 'Waiting for second participant...';
+          }
+          render(room.localParticipant);
+          room.remoteParticipants.forEach(render);
+          room.on('participantJoined', render);
+          room.on('participantLeft', remove);
+          room.on('roomLeft', cleanup);
+        } else {
+          room.leave();
+          room = null;
+          joinLeaveBtn.innerText = 'Join';
+        }
+      });
+
+      function render(participant) {
+        if (!participant.self) {
+          msg.innerText = '';
+        }
+        const div = document.createElement('div');
+        div.id = participant.address;
+        // Let SDK create the video element, and update changes to the media stream
+        participant.attach(div);
+        videos.appendChild(div);
+      }
+
+      function remove(participant) {
+        // Remove the video wrapper div
+        document.getElementById(participant.address)?.remove();
+      }
+
+      function cleanup() {
+        videos.innerHTML = '';
+        msg.innerText = '';
+      }
+    });
+  </script>
+</body>
+
+</html>

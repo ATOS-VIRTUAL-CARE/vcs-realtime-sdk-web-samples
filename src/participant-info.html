@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Participant info</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://sdk.virtualcareservices.net/dist/umd/vcs-realtime-sdk.min.js"></script>
+  <script src="../config.js"></script>
+</head>
+
+<body>
+  <h2>Exchange participant info</h2>
+  <h3>Description</h3>
+  <p>This sample app shows how to exchange the participant name and arbitrary custom properties between the
+    participants at the time of joining.</p>
+  <h3>Usage</h3>
+  <p>Enter your name & location and click 'Join'. Then open the <a href="./participant-info.html" target="_blank">same
+      url</a> on another tab and do the same.</p>
+  <div>
+    <input id="name" placeholder="Name"><br>
+    <input id="location" placeholder="Location">
+  </div>
+
+  <button id="joinLeaveBtn">Join</button>
+  <div id="videos"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      let room;
+
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const nameEl = document.getElementById('name');
+      const locationEl = document.getElementById('location');
+      const videos = document.getElementById('videos');
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        if (!room) {
+          joinLeaveBtn.disabled = true;
+          room = await RealtimeSdk.joinRoom(ROOM_TOKEN, {
+            host: VCS_DOMAIN,
+            audio: false,
+            name: document.getElementById('name').value,
+            participantInfo: { location: document.getElementById('location').value }
+          });
+          joinLeaveBtn.disabled = false;
+          joinLeaveBtn.innerText = 'Leave';
+          render(room.localParticipant);
+          room.remoteParticipants.forEach(render);
+          room.on('participantJoined', render);
+          room.on('participantLeft', remove);
+          room.on('roomLeft', cleanup);
+        } else {
+          room.leave();
+          room = null;
+          joinLeaveBtn.innerText = 'Join';
+        }
+      });
+
+      function render(participant) {
+        const div = document.createElement('div');
+        div.id = participant.address;
+        div.innerHTML = `<div class="name">${participant.name}, ${participant.participantInfo?.location}</div>`;
+        participant.attach(div);
+        videos.appendChild(div);
+      }
+
+      function remove(participant) {
+        // Remove the video wrapper div
+        document.getElementById(participant.address)?.remove();
+      }
+
+      function cleanup() {
+        videos.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+
+</html>
