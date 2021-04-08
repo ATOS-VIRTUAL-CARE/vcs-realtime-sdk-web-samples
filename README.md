@@ -9,7 +9,7 @@ To run these examples you need to clone this repo, then edit the vcs-domain and 
 ### Clone repo
 
 ```bash
-git clone git@github.com:GLB-UCC-VCS/realtime-sdk-samples.git
+git clone https://github.com/atos-virtual-care/realtime-sdk-samples
 cd realtime-sdk-samples
 ```
 
