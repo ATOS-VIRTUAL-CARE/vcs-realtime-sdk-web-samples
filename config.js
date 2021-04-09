@@ -7,12 +7,22 @@ let ROOM_TOKEN = '';
 
 // Don't change this code. This provides the domain and token to
 // the sample apps.
+
+const updateLinks = () => {
+  // Update links to samples by adding domain and token as query parameter
+  for (let ls = window.document.links, numLinks = ls.length, i = 0; i < numLinks; i++) {
+    if (ls[i].href.startsWith(window.origin)) {
+      ls[i].href = `${ls[i].href}?domain=${VCS_DOMAIN}&token=${ROOM_TOKEN}`;
+    }
+  }
+};
+
 window.vcs = async () => {
   if (VCS_DOMAIN && ROOM_TOKEN) {
     // Use globally defined domain and token above.
   } else if (location.search) {
     // Use domain and token in the query params
-    let params = new URLSearchParams(location.search);
+    const params = new URLSearchParams(location.search);
     VCS_DOMAIN = params.get('domain');
     ROOM_TOKEN = params.get('token');
   } else {
@@ -27,7 +37,9 @@ window.vcs = async () => {
       })
     });
     response = await response.json();
+    // eslint-disable-next-line require-atomic-updates
     VCS_DOMAIN = response.domain;
+    // eslint-disable-next-line require-atomic-updates
     ROOM_TOKEN = response.room?.token;
   }
 
@@ -36,14 +48,6 @@ window.vcs = async () => {
   return {
     VCS_DOMAIN,
     ROOM_TOKEN
-  }
-}
+  };
+};
 
-// Update links to samples by adding domain and token as query parameter
-const updateLinks = () => {
-  for (let ls = window.document.links, numLinks = ls.length, i = 0; i < numLinks; i++) {
-    if (ls[i].href.startsWith(window.origin)) {
-      ls[i].href = `${ls[i].href}?domain=${VCS_DOMAIN}&token=${ROOM_TOKEN}`;
-    }
-  }
-}
