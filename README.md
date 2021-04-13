@@ -2,6 +2,8 @@
 
 This is a repository for the vcs-realtime-sdk code samples.
 
+> The examples are running live on [github.io](https://glb-ucc-vcs.github.io/realtime-sdk-samples/).
+
 ## Run samples locally
 
 To run these examples you need to clone this repo, then edit the vcs-domain and room-token in the `config.js` file, and finally serve the root folder of the repo.
