@@ -2,7 +2,7 @@
 
 This is a repository for the vcs-realtime-sdk code samples.
 
-> The examples are running live on [github.io](https://glb-ucc-vcs.github.io/realtime-sdk-samples/).
+> The examples are running live on [github.io](https://atos-virtual-care.github.io/realtime-sdk-samples/).
 
 ## Run samples locally
 
