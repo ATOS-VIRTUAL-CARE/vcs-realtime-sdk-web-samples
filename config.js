@@ -12,7 +12,7 @@ const updateLinks = () => {
   // Update links to samples by adding domain and token as query parameter
   for (let ls = window.document.links, numLinks = ls.length, i = 0; i < numLinks; i++) {
     if (ls[i].href.startsWith(window.origin)) {
-      ls[i].href = `${ls[i].href}?domain=${VCS_DOMAIN}&token=${ROOM_TOKEN}`;
+      ls[i].href = `${ls[i].href}?domain=${VCS_DOMAIN}&token=${ROOM_TOKEN.replaceAll('+', '%2b')}`;
     }
   }
 };
@@ -31,10 +31,7 @@ window.vcs = async () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'    
-      },
-      body: JSON.stringify({
-        name: 'myroom'
-      })
+      }
     });
     response = await response.json();
     // eslint-disable-next-line require-atomic-updates
