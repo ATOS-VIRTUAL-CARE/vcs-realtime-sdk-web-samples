@@ -31,7 +31,8 @@ window.vcs = async () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'    
-      }
+      },
+      body: JSON.stringify({ name: `sdk-samples-${Date.now()}` })
     });
     response = await response.json();
     // eslint-disable-next-line require-atomic-updates
