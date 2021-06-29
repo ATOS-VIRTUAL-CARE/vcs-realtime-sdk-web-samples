@@ -29,3 +29,7 @@ Use your favorite tool to serve the root folder of the repo. E.g. [ws](https://w
 npm install -g local-web-server
 ws --https --open
 ```
+
+## More information
+
+For more information on the VCS SDK family, see the [VCS realtime SDK page](https://sdk.virtualcareservices.net/)
