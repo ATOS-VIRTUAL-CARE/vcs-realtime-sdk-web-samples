@@ -1,4 +1,4 @@
-# VCS Realtime SDK JAvaScript code samples
+# VCS Realtime SDK JavaScript code samples
 
 This is a repository for the vcs-realtime-sdk code samples.
 
