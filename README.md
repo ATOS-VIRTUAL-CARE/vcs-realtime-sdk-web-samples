@@ -32,4 +32,4 @@ ws --https --open
 
 ## More information
 
-For more information on the VCS SDK family, see the [VCS realtime SDK page](https://sdk.virtualcareservices.net/)
+For more information on the VCS SDK family, see the [VCS Realtime SDK documentation](https://sdk.virtualcareservices.net/)
