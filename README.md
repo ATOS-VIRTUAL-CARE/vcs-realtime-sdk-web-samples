@@ -2,7 +2,7 @@
 
 This is a repository for the vcs-realtime-sdk code samples.
 
-> The examples are running live on [github.io](https://atos-virtual-care.github.io/realtime-sdk-web-samples/).
+> The examples are running live on [github.io](https://atos-virtual-care.github.io/vcs-realtime-sdk-web-samples/).
 
 ## Run samples locally
 
@@ -11,8 +11,8 @@ To run these examples you need to clone this repo, then edit the vcs-domain and 
 ### Clone repo
 
 ```bash
-git clone https://github.com/atos-virtual-care/realtime-sdk-web-samples
-cd realtime-sdk-web-samples
+git clone https://github.com/atos-virtual-care/vcs-realtime-sdk-web-samples
+cd vcs-realtime-sdk-web-samples
 ```
 
 ### Create room token
