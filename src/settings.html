@@ -21,7 +21,7 @@
 
   <h2>Realtime SDK Configuration</h2>
   <div>
-    <button id="toogleOnlyRelayStatus" onclick="toggleOnlyRelayCandidates()" title="Enable/disable use only relay candidates">Toggle Only Relay Candidates</button>
+    <button id="toggleOnlyRelayStatus" onclick="toggleOnlyRelayCandidates()" title="Enable/disable use only relay candidates">Toggle Only Relay Candidates</button>
     :&nbsp;<span class="status" id="onlyRelayStatus">OFF</span>
   </div>
   <div>
@@ -31,7 +31,7 @@
 
   <h2>Logs</h2>
   <div>
-    <button id="toogleInlineLogs" onclick="toogleInlineLogs()" title="Enable/disable inline logs">Toggle Inline logs</button>
+    <button id="toggleInlineLogs" onclick="toggleInlineLogs()" title="Enable/disable inline logs">Toggle Inline logs</button>
     :&nbsp;<span class="status" id="inlineLogsStatus">OFF</span>
   </div>
 
@@ -96,7 +96,6 @@
     function toggleOnlyRelayCandidates() {
       RealtimeSdk.Settings.onlyRelayCandidates = !RealtimeSdk.Settings.onlyRelayCandidates;
       setElementStatus('onlyRelayStatus', RealtimeSdk.Settings.onlyRelayCandidates);
-      console.log('RealtimeSdk.Settings.onlyRelayCandidates: ', RealtimeSdk.Settings.onlyRelayCandidates);
     }
 
     function toggleAgc() {
@@ -104,11 +103,10 @@
       setElementStatus('agcStatus', RealtimeSdk.Settings.autoGainControl);
     }
 
-    function toogleInlineLogs() {
+    function toggleInlineLogs() {
       logger = logger ? null : inlineLogger
       setElementStatus('inlineLogsStatus', logger === inlineLogger);
       RealtimeSdk.setLogger(logger);
-      console.log('toogleInlineLogs: ', logger === inlineLogger);
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -120,7 +118,6 @@
       const muteUnmuteBtn = document.getElementById('muteUnmuteBtn');
       const videos = document.getElementById('videos');
 
-      console.log('RealtimeSdk.Settings.onlyRelayCandidates: ', RealtimeSdk.Settings.onlyRelayCandidates);
       setElementStatus('onlyRelayStatus', RealtimeSdk.Settings.onlyRelayCandidates);
       setElementStatus('agcStatus', RealtimeSdk.Settings.autoGainControl);
       setElementStatus('inlineLogsStatus', logger === inlineLogger);
