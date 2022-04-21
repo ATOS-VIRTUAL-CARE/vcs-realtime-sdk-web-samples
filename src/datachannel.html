@@ -4,7 +4,7 @@
 <head>
   <title>Data Channel</title>
   <link rel="stylesheet" href="../style.css" />
-  <script src="../vcs-realtime-sdk.js"></script>
+  <script src="https://sdk.virtualcareservices.net/dist/umd/vcs-realtime-sdk.min.js"></script>
   <script src="../config.js"></script>
 </head>
 
@@ -22,9 +22,8 @@
     <input id="message" placeholder="Message"><br>
     <select id="participantDropDown">
       <option value="default">All Addresses</option>
-    </select>
-    <br>
-    <button id="sendMessageBtn">Send</button><br>
+    </select><br>
+    <button id="sendMessageBtn">Send</button>
   </div>
 
   <script>
@@ -45,7 +44,7 @@
       sendMessageBtn.addEventListener('click', async () => {
         data = messageElement.value;
 
-        participantAddress = dropDownListElement.options[dropDownListElement.selectedIndex].value;
+        participantAddress = dropDownListElement.value;
 
         // If no particular address is selected, send to all participants.
         if (participantAddress === 'default') {
@@ -74,14 +73,9 @@
           room.on('roomLeft', cleanup);
 
           // Remote participant sees who sent the message
-          let participant;
-          for (const user in room.remoteParticipants) {
-            if (user.address === participantAddress) {
-              participant = user;
-            }
-          }
+          let participant = room.remoteParticipants.find(participantAddress);
 
-          await room.on('messageReceived', (participant, data) => {
+          room.on('messageReceived', (participant, data) => {
             alert(`Participant ${participant.address} sent message: ${data}`);
           });
         } else {
@@ -91,25 +85,27 @@
         }
       });
 
-      function render (participant) {
+      function render(participant) {
         const div = document.createElement('div');
         div.id = participant.address;
         // Let SDK create the video element, and update changes to the media stream
         participant.attach(div);
         videos.appendChild(div);
         // On Render, add new element to option
-        const select = document.getElementById('participantDropDown');
         if (participant.address !== room.localParticipant.address) {
-          select.options[select.options.length] = new Option(participant.address, participant.address);
+          const option = document.createElement("option");
+          option.text = participant.address;
+          option.value = participant.address;
+          dropDownListElement.add(option);
         }
       }
 
-      function remove (participant) {
+      function remove(participant) {
         // Remove the video wrapper div
         document.getElementById(participant.address)?.remove();
       }
 
-      function cleanup () {
+      function cleanup() {
         videos.innerHTML = '';
       }
     });
