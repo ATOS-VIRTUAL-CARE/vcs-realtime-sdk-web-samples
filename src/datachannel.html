@@ -11,7 +11,7 @@
 <body>
   <h2>Data Channel</h2>
   <h3>Description</h3>
-  <p>This sample app joins a room with audio and video and shows all participants video along with the ability to send messages.</p>
+  <p>This sample app joins a room and then allow sending/receiving messages via a WebRTC Data Channel.</p>
   <h3>Usage</h3>
   <p>Open the <a href="./datachannel.html" target="_blank">same url</a> on another tab (or even another device/browser)
     and then join on both tabs.</p>
@@ -20,12 +20,12 @@
 
   <div>
     <input id="message" placeholder="Message"><br>
+    <select id="participantDropDown">
+      <option value="default">All Addresses</option>
+    </select>
+    <br>
     <button id="sendMessageBtn">Send</button><br>
   </div>
-
-  <select id="participantDropDown">
-    <option value="default">All Addresses</option>
-  </select>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -36,27 +36,25 @@
       const messageElement = document.getElementById('message');
 
       let room;
-      let participants;
       let participantAddress;
 
       const joinLeaveBtn = document.getElementById('joinLeaveBtn');
       const videos = document.getElementById('videos');
+      const dropDownListElement = document.getElementById('participantDropDown');
 
       sendMessageBtn.addEventListener('click', async () => {
         data = messageElement.value;
 
-        let dropDownListElement = document.getElementById("participantDropDown");
-        participantAddress = dropDownListElement.options[dropDownListElement.selectedIndex].text;
-        
-        //If no particular address is selected, send to all participants.
-        if (participantAddress === 'All Addresses') {
-          room.sendMessageToParticipant(data, null);
-        }
-        else {
-          await room.sendMessageToParticipant(data, participantAddress);
-        }       
+        participantAddress = dropDownListElement.options[dropDownListElement.selectedIndex].value;
 
-        //Reset message Value to a blank slate.
+        // If no particular address is selected, send to all participants.
+        if (participantAddress === 'default') {
+          await room.sendMessageToParticipant(data);
+        } else {
+          await room.sendMessageToParticipant(data, participantAddress);
+        }
+
+        // Reset message Value to a blank slate.
         message.value = '';
       });
 
@@ -67,9 +65,6 @@
             host: VCS_DOMAIN
           });
 
-          participants = room.remoteParticipants;
-          console.dir(participants);
-
           joinLeaveBtn.disabled = false;
           joinLeaveBtn.innerText = 'Leave';
           render(room.localParticipant);
@@ -78,20 +73,17 @@
           room.on('participantLeft', remove);
           room.on('roomLeft', cleanup);
 
-          //Remote participant sees who sent the message
+          // Remote participant sees who sent the message
           let participant;
-
-          for (user in participants) {
-            if (user.address === participantAddress){
+          for (const user in room.remoteParticipants) {
+            if (user.address === participantAddress) {
               participant = user;
             }
           }
 
           await room.on('messageReceived', (participant, data) => {
             alert(`Participant ${participant.address} sent message: ${data}`);
-            console.log(`Participant ${participant.address} sent message:`, data);
           });
-
         } else {
           room.leave();
           room = null;
@@ -99,25 +91,25 @@
         }
       });
 
-      function render(participant) {
+      function render (participant) {
         const div = document.createElement('div');
         div.id = participant.address;
         // Let SDK create the video element, and update changes to the media stream
         participant.attach(div);
         videos.appendChild(div);
-        //On Render, add new element to option
-        var select = document.getElementById("participantDropDown");
+        // On Render, add new element to option
+        const select = document.getElementById('participantDropDown');
         if (participant.address !== room.localParticipant.address) {
           select.options[select.options.length] = new Option(participant.address, participant.address);
         }
       }
 
-      function remove(participant) {
+      function remove (participant) {
         // Remove the video wrapper div
         document.getElementById(participant.address)?.remove();
       }
 
-      function cleanup() {
+      function cleanup () {
         videos.innerHTML = '';
       }
     });
