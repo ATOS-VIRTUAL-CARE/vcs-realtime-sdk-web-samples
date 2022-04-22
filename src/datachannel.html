@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Data Channel</title>
+  <link rel="stylesheet" href="../style.css" />
+  <script src="https://sdk.virtualcareservices.net/dist/umd/vcs-realtime-sdk.min.js"></script>
+  <script src="../config.js"></script>
+</head>
+
+<body>
+  <h2>Data Channel</h2>
+  <h3>Description</h3>
+  <p>This sample app joins a room and then allow sending/receiving messages via a WebRTC Data Channel.</p>
+  <h3>Usage</h3>
+  <p>Open the <a href="./datachannel.html" target="_blank">same url</a> on another tab (or even another device/browser)
+    and then join on both tabs.</p>
+  <button id="joinLeaveBtn">Join</button>
+  <div id="videos"></div>
+
+  <div>
+    <input id="message" placeholder="Message"><br>
+    <select id="participantDropDown">
+      <option value="">All Participants</option>
+    </select><br>
+    <button id="sendMessageBtn">Send</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Import VCS_DOMAIN and ROOM_TOKEN from config.js.
+      // Edit config.js with your own vcs-domain and token.
+      await window.vcs(document);
+
+      let room;
+
+      const messageElement = document.getElementById('message');
+      const joinLeaveBtn = document.getElementById('joinLeaveBtn');
+      const videos = document.getElementById('videos');
+      const dropDownListElement = document.getElementById('participantDropDown');
+
+      sendMessageBtn.addEventListener('click', async () => {
+        data = messageElement.value;
+        await room.sendMessageToParticipant(data, dropDownListElement.value);
+
+        // Reset message Value to a blank slate.
+        message.value = '';
+      });
+
+      joinLeaveBtn.addEventListener('click', async () => {
+        if (!room) {
+          joinLeaveBtn.disabled = true;
+          room = await RealtimeSdk.joinRoom(ROOM_TOKEN, {
+            host: VCS_DOMAIN
+          });
+
+          joinLeaveBtn.disabled = false;
+          joinLeaveBtn.innerText = 'Leave';
+          render(room.localParticipant);
+          room.remoteParticipants.forEach(render);
+          room.on('participantJoined', render);
+          room.on('participantLeft', remove);
+          room.on('roomLeft', cleanup);
+
+          room.on('messageReceived', (participant, data) => {
+            alert(`Participant ${participant.address} sent message: ${data}`);
+          });
+        } else {
+          room.leave();
+          room = null;
+          joinLeaveBtn.innerText = 'Join';
+        }
+      });
+
+      function render(participant) {
+        const div = document.createElement('div');
+        div.id = participant.address;
+        // Let SDK create the video element, and update changes to the media stream
+        participant.attach(div);
+        videos.appendChild(div);
+        // On Render, add new option to dropdown list
+        if (participant.address !== room.localParticipant.address) {
+          const option = document.createElement('option');
+          option.text = participant.address;
+          option.value = participant.address;
+          dropDownListElement.add(option);
+        }
+      }
+
+      function remove(participant) {
+        // Remove the video wrapper div
+        document.getElementById(participant.address)?.remove();
+      }
+
+      function cleanup() {
+        videos.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+
+</html>
