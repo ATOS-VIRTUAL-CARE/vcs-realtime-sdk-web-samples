@@ -21,7 +21,7 @@
   <div>
     <input id="message" placeholder="Message"><br>
     <select id="participantDropDown">
-      <option value="default">All Addresses</option>
+      <option value="">All Participants</option>
     </select><br>
     <button id="sendMessageBtn">Send</button>
   </div>
@@ -47,7 +47,7 @@
         participantAddress = dropDownListElement.value;
 
         // If no particular address is selected, send to all participants.
-        if (participantAddress === 'default') {
+        if (participantAddress === '') {
           await room.sendMessageToParticipant(data);
         } else {
           await room.sendMessageToParticipant(data, participantAddress);
@@ -72,9 +72,6 @@
           room.on('participantLeft', remove);
           room.on('roomLeft', cleanup);
 
-          // Remote participant sees who sent the message
-          let participant = room.remoteParticipants.find(participantAddress);
-
           room.on('messageReceived', (participant, data) => {
             alert(`Participant ${participant.address} sent message: ${data}`);
           });
@@ -91,9 +88,9 @@
         // Let SDK create the video element, and update changes to the media stream
         participant.attach(div);
         videos.appendChild(div);
-        // On Render, add new element to option
+        // On Render, add new option to dropdown list
         if (participant.address !== room.localParticipant.address) {
-          const option = document.createElement("option");
+          const option = document.createElement('option');
           option.text = participant.address;
           option.value = participant.address;
           dropDownListElement.add(option);
