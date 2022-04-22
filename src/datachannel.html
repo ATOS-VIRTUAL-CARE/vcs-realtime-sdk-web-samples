@@ -46,12 +46,7 @@
 
         participantAddress = dropDownListElement.value;
 
-        // If no particular address is selected, send to all participants.
-        if (participantAddress === '') {
-          await room.sendMessageToParticipant(data);
-        } else {
           await room.sendMessageToParticipant(data, participantAddress);
-        }
 
         // Reset message Value to a blank slate.
         message.value = '';
