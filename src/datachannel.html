@@ -32,21 +32,16 @@
       // Edit config.js with your own vcs-domain and token.
       await window.vcs(document);
 
-      const messageElement = document.getElementById('message');
-
       let room;
-      let participantAddress;
 
+      const messageElement = document.getElementById('message');
       const joinLeaveBtn = document.getElementById('joinLeaveBtn');
       const videos = document.getElementById('videos');
       const dropDownListElement = document.getElementById('participantDropDown');
 
       sendMessageBtn.addEventListener('click', async () => {
         data = messageElement.value;
-
-        participantAddress = dropDownListElement.value;
-
-          await room.sendMessageToParticipant(data, participantAddress);
+        await room.sendMessageToParticipant(data, dropDownListElement.value);
 
         // Reset message Value to a blank slate.
         message.value = '';
