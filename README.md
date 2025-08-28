@@ -31,7 +31,7 @@ cd vcs-realtime-sdk-web-samples
 Use your favorite tool to serve the root folder of the repo. E.g. [ws](https://www.npmjs.com/package/local-web-server).
 
 ```bash
-npm install
+npm install -g local-web-server
 npx ws --https --open
 ```
 
