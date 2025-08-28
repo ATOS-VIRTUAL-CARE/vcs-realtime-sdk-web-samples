@@ -17,6 +17,13 @@ cd vcs-realtime-sdk-web-samples
 
 1. Obtain an API key and VCS domain from your system administrator.
 2. Create a room token using the [REST API](https://sdk.virtualcareservices.net/sdks/rest/).
+
+    ```bash
+    $ curl -X POST https://<vcs-domain>/api/realtime/room \
+        -H "x-vcs-token: <api-key>" \
+        -H "Content-Type: application/json"
+    ```
+
 3. Edit the `config.js` file to contain the VCS domain provided to you, and the room token created in the step above.
 
 ### Serve the repo
@@ -24,8 +31,8 @@ cd vcs-realtime-sdk-web-samples
 Use your favorite tool to serve the root folder of the repo. E.g. [ws](https://www.npmjs.com/package/local-web-server).
 
 ```bash
-npm install -g local-web-server
-ws --https --open
+npm install
+npx ws --https --open
 ```
 
 ## More information

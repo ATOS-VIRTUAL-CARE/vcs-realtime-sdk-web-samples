@@ -30,7 +30,7 @@ window.vcs = async () => {
     let response = await fetch('https://sdk-demo.virtualcareservices.net/api/room', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'    
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ name: `sdk-samples-${Date.now()}` })
     });
