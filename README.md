@@ -4,7 +4,7 @@ This is a repository for the vcs-realtime-sdk code samples.
 
 ## Run samples locally
 
-To run these examples you need to clone this repo, then edit the vcs-domain and room-token in the `config.js` file, and finally serve the root folder of the repo.
+To run these examples you need to clone this repo, then edit the `VCS_DOMAIN`and `ROOM_TOKEN` in the `config.js` file, and finally serve the root folder of the repo.
 
 ### Clone repo
 
